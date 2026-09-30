@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Textball — Sit. Stay. Site. Simplified.</title>
+  <meta name="description" content="A beginner-friendly text-first HTML and CSS playground with a live preview.">
+  <link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <pre class="ascii-logo" role="img" aria-label="ASCII art portrait of Meatball">                            .=.             .
+                            +##=.         :+*:
+                           :#+*#%:      :*#*+*
+                           -%*:-*:...:..=#==**.
+                   .       .+: :-=+:.:=+::.:**:           .
+                .::::        .-===#=..*#=:. :-:.         ::::.
+             .::::::.       :%#===**=++:::=+..::..       .::::::.
+          .::::::.        :.:@%%@@@-::#@#*#@..:::::.        .::::::..
+       .::::::.          .:. *@#++*-.:+**%@* :::-::::.         .:::::::.
+    .::::::.             ..:  #@#=*#+*+=#@=  -:.::....            .:::::::.
+ .::::::.               :. .. :%@@%###%@@- . ...::. :**              ..::::::
+.:::::                  :.     =%@@@%%%#-..   ...: :#@@-                .:::::
+ .::::::.               :=  .   .=++--=.     ...:.:*#%@-              .::::::.
+    .::::::.             =+.  ..    -==+   .-... .+==%@.          ..::::::.
+       .::::::.           -*+-:.... -*=: :=*- .:=+- :@@.       .:::::::.
+          .::::::.        .-%@**+--=:*=:*%+.:+**+:  -@#     .:::::::.
+             .::::::.     -%#-.-:-==*++**: .=++.   :#@-  .:::::::.
+                .::::   :+@@*       :=-*%+:+:      +%#-  ::::..
+                   .   +@@@#.       :==--%%#        .     .
+                       =+--         :== +@@*
+                                    :+-=@@@*
+                                    -+-:##-
+                                    =+-
+                                    .:.</pre>
+    <div>
+      <h1>Textball</h1>
+      <small>Sit. Stay. Site. Simplified.</small>
+    </div>
+  </div>
+  <div class="actions" aria-label="Project actions">
+    <div class="action-group learn-actions">
+      <button id="load-example" class="example-btn" type="button">Example</button>
+      <button id="open-help" class="help-btn" type="button">Help!</button>
+    </div>
+    <div class="action-group import-actions">
+      <button id="import-html" type="button">↑ Import HTML</button>
+      <input id="html-file" type="file" accept=".html,.htm,text/html" hidden>
+      <button id="import-css" type="button">↑ Import CSS</button>
+      <input id="css-file" type="file" accept=".css,text/css" hidden>
+    </div>
+    <div class="action-group export-actions">
+      <button id="export-html" type="button">↓ Export HTML</button>
+      <button id="export-css" type="button">↓ Export CSS</button>
+    </div>
+    <div class="utility-actions">
+      <button id="theme-toggle" type="button" aria-pressed="false">☾ Dark mode</button>
+      <button id="undo" type="button" title="Undo (Ctrl/Cmd+Z)" disabled>↶ Undo</button>
+      <button id="redo" type="button" title="Redo (Ctrl/Cmd+Shift+Z)" disabled>↷</button>
+    </div>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="panel palette-panel">
+    <div class="panelhead">
+      <strong id="library-title">① Tag library</strong>
+      <span class="eyebrow" id="library-lang">HTML</span>
+    </div>
+    <div class="toolbox">
+      <p class="hint" id="library-hint">Drag code into the editor, or click to insert it at the cursor.</p>
+      <label class="search-box"><span aria-hidden="true">⌕</span><input id="library-search" type="search" placeholder="Find a tag…" aria-label="Find code in library"></label>
+      <div id="categories" class="categories"></div>
+      <div id="palette"></div>
+      <p id="no-items" class="hint hidden">Nothing found. Try another word.</p>
+    </div>
+  </aside>
+
+  <section class="panel editor-panel">
+    <div class="panelhead editor-head">
+      <div class="tabs" role="tablist" aria-label="Language">
+        <button class="active" data-tab="html" role="tab" aria-selected="true">HTML</button>
+        <button data-tab="css" role="tab" aria-selected="false">CSS</button>
+        <button data-tab="js" role="tab" aria-selected="false">JavaScript</button>
+      </div>
+      <div class="editor-tools">
+        <label class="guide-toggle" title="Use the same colors as the code library">
+          <input id="color-guide" type="checkbox" checked>
+          <span class="switch-track" aria-hidden="true"></span>
+          <span>Color guide</span>
+        </label>
+        <button id="format-code" type="button" title="Format and indent this code">⌁ Format</button>
+      </div>
+    </div>
+
+    <div id="language-switch" class="language-switch hidden">
+      <label class="switch-row">
+        <input id="language-enabled" type="checkbox">
+        <span class="switch-track" aria-hidden="true"></span>
+        <span id="language-switch-text">Turn CSS on</span>
+      </label>
+      <span id="language-switch-help">Your code stays here while it is off.</span>
+    </div>
+
+    <div class="codebar">
+      <span id="codebar-label">② Write the HTML</span>
+      <span id="inspect-status">Drag tags in, or type normally.</span>
+    </div>
+
+    <div class="editor-wrap" id="editor-wrap">
+      <pre id="highlight" aria-hidden="true"></pre>
+      <textarea id="source" spellcheck="false" aria-label="HTML source code"></textarea>
+    </div>
+    <div class="editor-note" id="note">The browser reads this text from top to bottom and turns the tags into the page on the right.</div>
+  </section>
+
+  <section class="panel preview-panel">
+    <div class="panelhead">
+      <strong>③ Your website <span class="live">● Live</span></strong>
+      <div class="preview-buttons">
+        <button id="inspect" type="button" aria-pressed="false" title="Click something on the page to find its HTML">🔎 Inspect</button>
+        <button id="size" type="button" title="Toggle narrow preview">▯ Mobile</button>
+        <button id="run" type="button" title="Reload preview">↻</button>
+      </div>
+    </div>
+    <div class="browser-bar"><span class="browser-dots">● ● ●</span><span class="address">your-website.html</span><span aria-hidden="true">↗</span></div>
+    <div class="preview-wrap" id="preview-wrap"><iframe id="preview" title="Your website live preview" sandbox="allow-scripts"></iframe></div>
+    <div class="preview-bottom" id="preview-bottom">Every change shows up here.</div>
+  </section>
+</main>
+
+<footer><span>HTML = content · CSS = style · JavaScript = behavior</span><span id="count">Blank project</span><span class="copyright">© Robert Pino 2026</span></footer>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="tag-help">
+  <button class="dialog-x" id="close-tag-help" aria-label="Close">×</button>
+  <div class="help-kicker" id="help-kicker">HTML TAG</div>
+  <h2 id="help-title">Paragraph &lt;p&gt;</h2>
+  <p id="help-description"></p>
+  <div class="help-grid">
+    <div><h3>Code</h3><pre id="help-code"></pre></div>
+    <div><h3>What it makes</h3><iframe id="help-preview" title="Visual example"></iframe></div>
+  </div>
+</dialog>
+
+<dialog id="general-help">
+  <button class="dialog-x" id="close-help" aria-label="Close">×</button>
+  <h2>How to use Textball</h2>
+  <ol>
+    <li><b>Write real code.</b> Type HTML or CSS in the middle editor.</li>
+    <li><b>Use the library when you need it.</b> Drag or click an item to insert its actual code text.</li>
+    <li><b>Use the ? buttons.</b> Each library item explains what the code does and shows a live example.</li>
+    <li><b>Inspect the page.</b> Click 🔎 Inspect, then click something in the preview. Textball jumps to the HTML tag that created it.</li>
+    <li><b>Style it.</b> Open CSS, turn CSS on, then write selectors and properties.</li>
+    <li><b>Export when you are done.</b> Your work lives in this browser tab until you save it.</li>
+  </ol>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+
+const HTML_ITEMS = [
+  ['WORDS & HEADINGS', [
+    {key:'h1',label:'Heading',code:'<h1>Your heading</h1>',insert:'<h1>Your heading</h1>',color:'blue',desc:'A heading labels the most important title on a page. h1 is the biggest level; h2–h6 are smaller section headings.',demo:'<h1 style="outline:3px solid #f59e0b;outline-offset:3px">Your heading</h1><p>A paragraph underneath it.</p>'},
+    {key:'h2',label:'Section heading',code:'<h2>Section title</h2>',insert:'<h2>Section title</h2>',color:'blue',desc:'A section heading breaks the page into smaller parts.',demo:'<h1>My Page</h1><h2 style="outline:3px solid #f59e0b;outline-offset:3px">Section title</h2><p>Section content.</p>'},
+    {key:'p',label:'Paragraph',code:'<p>Your paragraph</p>',insert:'<p>Your paragraph</p>',color:'blue',desc:'A paragraph holds normal blocks of text.',demo:'<h2>About Meatball</h2><p style="outline:3px solid #f59e0b;outline-offset:3px">Meatball is a very good dog.</p>'}
+  ]],
+  ['EMPHASIS & BREAKS', [
+    {key:'b',label:'Bold',code:'<b>bold words</b>',insert:'<b>bold words</b>',color:'pink',desc:'Bold makes text visually heavier.',demo:'<p>This is <b style="outline:3px solid #f59e0b;outline-offset:2px">bold text</b> in a paragraph.</p>'},
+    {key:'i',label:'Italic',code:'<i>italic words</i>',insert:'<i>italic words</i>',color:'teal',desc:'Italic slants text for emphasis or style.',demo:'<p>This is <i style="outline:3px solid #f59e0b;outline-offset:2px">italic text</i> in a paragraph.</p>'},
+    {key:'u',label:'Underline',code:'<u>underlined words</u>',insert:'<u>underlined words</u>',color:'amber',desc:'Underline draws a line underneath text.',demo:'<p>This is <u style="outline:3px solid #f59e0b;outline-offset:2px">underlined text</u>.</p>'},
+    {key:'br',label:'Line break',code:'<br>',insert:'<br>',color:'gray',desc:'A line break moves the next text onto a new line without starting a new paragraph.',demo:'<p>First line<br><span style="outline:3px solid #f59e0b;outline-offset:2px">Second line</span></p>'},
+    {key:'hr',label:'Divider',code:'<hr>',insert:'<hr>',color:'gray',desc:'A divider creates a thematic break, usually shown as a horizontal line.',demo:'<p>Above</p><hr style="outline:3px solid #f59e0b;outline-offset:3px"><p>Below</p>'}
+  ]],
+  ['LINKS & MEDIA', [
+    {key:'a',label:'Link',code:'<a href="URL">link text</a>',insert:'<a href="https://example.com">link text</a>',color:'green',desc:'A link sends the visitor to another page or website. href is the destination.',demo:'<p>Visit <a href="#" style="outline:3px solid #f59e0b;outline-offset:3px">this link</a> to learn more.</p>'},
+    {key:'img',label:'Image',code:'<img src="image.jpg" alt="description">',insert:'<img src="dog.png" alt="A happy dog">',color:'green',desc:'An image displays a picture. src tells the browser where the image is; alt describes it.',demo:'<img src="dog.png" alt="A happy dog" style="width:150px;outline:3px solid #f59e0b;outline-offset:3px">'}
+  ]],
+  ['LISTS', [
+    {key:'ul',label:'Bulleted list',code:'<ul> ... </ul>',insert:'<ul>\n  <li>First item</li>\n  <li>Second item</li>\n</ul>',color:'orange',desc:'An unordered list groups items with bullets.',demo:'<ul style="outline:3px solid #f59e0b;outline-offset:3px"><li>Treats</li><li>Naps</li></ul>'},
+    {key:'ol',label:'Numbered list',code:'<ol> ... </ol>',insert:'<ol>\n  <li>First item</li>\n  <li>Second item</li>\n</ol>',color:'orange',desc:'An ordered list groups items in numbered order.',demo:'<ol style="outline:3px solid #f59e0b;outline-offset:3px"><li>Wake up</li><li>Get snacks</li></ol>'},
+    {key:'li',label:'List item',code:'<li>List item</li>',insert:'<li>List item</li>',color:'orange',desc:'A list item is one entry inside a ul or ol list.',demo:'<ul><li style="outline:3px solid #f59e0b;outline-offset:3px">One list item</li><li>Another</li></ul>'}
+  ]],
+  ['CONTAINERS', [
+    {key:'div',label:'Container',code:'<div> ... </div>',insert:'<div>\n  Your content\n</div>',color:'purple',desc:'A div groups pieces of a page so they can be organized or styled together.',demo:'<div style="padding:12px;border:1px solid #bbb;outline:3px solid #f59e0b;outline-offset:3px"><b>A grouped section</b><p>Content inside the div.</p></div>'},
+    {key:'section',label:'Section',code:'<section> ... </section>',insert:'<section>\n  <h2>Section title</h2>\n  <p>Section content</p>\n</section>',color:'purple',desc:'A section groups related content that belongs together as one meaningful part of a page.',demo:'<section style="padding:12px;background:#eef5ff;outline:3px solid #f59e0b;outline-offset:3px"><h2>A section</h2><p>Related content.</p></section>'}
+  ]]
+];
+
+const CSS_ITEMS = [
+  ['CHOOSE WHAT TO STYLE', [
+    {key:'body',label:'Whole page',code:'body { }',insert:'body {\n  \n}',color:'purple',desc:'The body selector styles the entire visible page.',demo:'<div style="padding:18px;background:#eef5ff;outline:3px solid #f59e0b">The whole page can be styled.</div>'},
+    {key:'h1sel',label:'Main headings',code:'h1 { }',insert:'h1 {\n  \n}',color:'purple',desc:'The h1 selector styles every h1 heading.',demo:'<h1 style="color:#5749df;outline:3px solid #f59e0b;outline-offset:3px">Styled heading</h1>'},
+    {key:'psel',label:'Paragraphs',code:'p { }',insert:'p {\n  \n}',color:'purple',desc:'The p selector styles every paragraph.',demo:'<p style="font-size:20px;outline:3px solid #f59e0b;outline-offset:3px">Styled paragraph</p>'},
+    {key:'class',label:'A class',code:'.my-class { }',insert:'.my-class {\n  \n}',color:'purple',desc:'A class selector styles elements whose class attribute matches the name.',demo:'<p class="my-class" style="background:#fff2dc;padding:8px;outline:3px solid #f59e0b">class="my-class"</p>'},
+    {key:'id',label:'One ID',code:'#my-id { }',insert:'#my-id {\n  \n}',color:'purple',desc:'An ID selector styles the one element whose id attribute matches the name.',demo:'<p id="my-id" style="background:#e7f5ef;padding:8px;outline:3px solid #f59e0b">id="my-id"</p>'}
+  ]],
+  ['COLOR', [
+    {key:'color',label:'Text color',code:'color: #5749df;',insert:'color: #5749df;',color:'pink',desc:'color changes the color of text.',demo:'<p style="color:#5749df;font-size:22px;outline:3px solid #f59e0b">Purple text</p>'},
+    {key:'background',label:'Background',code:'background: #f0f7ff;',insert:'background: #f0f7ff;',color:'teal',desc:'background changes the area behind an element.',demo:'<p style="background:#f0f7ff;padding:12px;outline:3px solid #f59e0b">A background</p>'}
+  ]],
+  ['TEXT', [
+    {key:'font-size',label:'Font size',code:'font-size: 24px;',insert:'font-size: 24px;',color:'blue',desc:'font-size controls how large the text appears.',demo:'<p style="font-size:24px;outline:3px solid #f59e0b">24px text</p>'},
+    {key:'font-family',label:'Font',code:'font-family: Arial, sans-serif;',insert:'font-family: Arial, sans-serif;',color:'blue',desc:'font-family chooses the typeface.',demo:'<p style="font-family:Georgia,serif;font-size:20px;outline:3px solid #f59e0b">Different font</p>'},
+    {key:'font-weight',label:'Boldness',code:'font-weight: bold;',insert:'font-weight: bold;',color:'pink',desc:'font-weight controls how heavy the letters are.',demo:'<p style="font-weight:bold;font-size:20px;outline:3px solid #f59e0b">Bold text</p>'},
+    {key:'text-align',label:'Text alignment',code:'text-align: center;',insert:'text-align: center;',color:'blue',desc:'text-align moves inline content left, center, right, or justified.',demo:'<div style="text-align:center;outline:3px solid #f59e0b"><p>Centered text</p></div>'},
+    {key:'line-height',label:'Line spacing',code:'line-height: 1.6;',insert:'line-height: 1.6;',color:'blue',desc:'line-height controls the vertical space between lines of text.',demo:'<p style="line-height:2;outline:3px solid #f59e0b">More space<br>between lines</p>'}
+  ]],
+  ['SPACE & SIZE', [
+    {key:'padding',label:'Inside space',code:'padding: 20px;',insert:'padding: 20px;',color:'orange',desc:'padding adds space inside an element, between its content and its edge.',demo:'<div style="padding:25px;border:2px solid #333;outline:3px solid #f59e0b">Padding inside</div>'},
+    {key:'margin',label:'Outside space',code:'margin: 20px;',insert:'margin: 20px;',color:'orange',desc:'margin adds space outside an element.',demo:'<div style="background:#eee;padding:2px"><div style="margin:20px;background:white;outline:3px solid #f59e0b">Margin outside</div></div>'},
+    {key:'width',label:'Width',code:'width: 300px;',insert:'width: 300px;',color:'green',desc:'width controls how wide an element is.',demo:'<div style="width:180px;background:#e7f5ef;padding:8px;outline:3px solid #f59e0b">180px wide</div>'},
+    {key:'max-width',label:'Maximum width',code:'max-width: 600px;',insert:'max-width: 600px;',color:'green',desc:'max-width prevents an element from growing wider than a chosen size.',demo:'<div style="max-width:220px;background:#e7f5ef;padding:8px;outline:3px solid #f59e0b">Stops growing here</div>'}
+  ]],
+  ['EDGES & LAYOUT', [
+    {key:'border',label:'Border',code:'border: 2px solid black;',insert:'border: 2px solid black;',color:'purple',desc:'border draws an edge around an element.',demo:'<div style="border:4px solid #5749df;padding:10px;outline:3px solid #f59e0b;outline-offset:3px">A border</div>'},
+    {key:'border-radius',label:'Rounded corners',code:'border-radius: 12px;',insert:'border-radius: 12px;',color:'purple',desc:'border-radius rounds an element’s corners.',demo:'<div style="border-radius:18px;background:#f1eafb;padding:14px;outline:3px solid #f59e0b">Rounded corners</div>'},
+    {key:'display',label:'Layout mode',code:'display: flex;',insert:'display: flex;',color:'purple',desc:'display changes how an element participates in page layout. flex is useful for arranging children in a row or column.',demo:'<div style="display:flex;gap:8px;outline:3px solid #f59e0b"><span style="background:#eee;padding:8px">A</span><span style="background:#eee;padding:8px">B</span></div>'}
+  ]]
+];
+
+const COLOR_BY_HTML_TAG = {h1:'blue',h2:'blue',h3:'blue',h4:'blue',h5:'blue',h6:'blue',p:'blue',a:'green',img:'green',b:'pink',strong:'pink',i:'teal',em:'teal',u:'amber',br:'gray',hr:'gray',ul:'orange',ol:'orange',li:'orange',div:'purple',section:'purple'};
+const CSS_PROP_COLOR = {color:'pink',background:'teal','background-color':'teal','font-size':'blue','font-family':'blue','font-weight':'pink','font-style':'pink','text-decoration':'pink','text-align':'blue','line-height':'blue',padding:'orange',margin:'orange',gap:'orange',width:'green',height:'green','max-width':'green',border:'purple','border-radius':'purple',display:'purple'};
+
+const EXAMPLE_HTML = `<h1>Meatball is a good boy.</h1>\n<p>A small website for a <b>very good dog.</b></p>\n<img src="dog.png" alt="Illustration of a happy brown and cream dog wearing a green collar">\n<h2>Meet Meatball</h2>\n<p>He is <i>always curious</i> and loves <u>making new friends.</u></p>\n<h2>His favorite things</h2>\n<ul>\n  <li>Long walks in the park</li>\n  <li>Snacks (and more snacks)</li>\n  <li>Being called a good boy</li>\n</ul>\n<p>Learn about <a href="https://en.wikipedia.org/wiki/Dog">dogs</a>.</p>`;
+const EXAMPLE_CSS = `body {\n  font-family: system-ui, sans-serif;\n  color: #304333;\n  background: #fafbf5;\n  padding: 24px;\n  margin: 0;\n}\n\nh1 {\n  font-size: 30px;\n  color: #a64b34;\n}\n\nh2 {\n  margin-top: 24px;\n}\n\np, li {\n  line-height: 1.7;\n}\n\nimg {\n  width: 100%;\n  max-width: 520px;\n  border-radius: 12px;\n}\n\na {\n  color: #527945;\n}`;
+
+const state = {html:'',css:'',js:'',cssOn:false,jsOn:false};
+let tab='html', past=[], future=[], last='', previewTimer=null, inspectOn=false, currentCategory='All', dirty=false;
+const source=$('#source'), highlight=$('#highlight'), frame=$('#preview');
+
+function snapshot(){return JSON.stringify(state)}
+function commit(){const n=snapshot();if(n===last)return;if(last){past.push(last);dirty=true}if(past.length>100)past.shift();last=n;future=[];historyUI()}
+function historyUI(){$('#undo').disabled=!past.length;$('#redo').disabled=!future.length}
+function history(back){commit();const from=back?past:future,to=back?future:past;if(!from.length)return;to.push(snapshot());Object.assign(state,JSON.parse(from.pop()));last=snapshot();setTab(tab,false);preview();historyUI()}
+function notify(t){const x=$('#toast');x.textContent=t;x.style.display='block';clearTimeout(notify.t);notify.t=setTimeout(()=>x.style.display='none',2600)}
+
+function libraryData(){return tab==='html'?HTML_ITEMS:tab==='css'?CSS_ITEMS:[]}
+function renderLibrary(){
+  const box=$('#palette'), cats=$('#categories'), groups=libraryData(); box.replaceChildren(); cats.replaceChildren();
+  $('#library-title').textContent=tab==='html'?'① Tag library':tab==='css'?'① CSS library':'① JavaScript';
+  $('#library-lang').textContent=tab==='js'?'JS':tab.toUpperCase();
+  $('#library-hint').textContent=tab==='js'?'JavaScript stays plain text. No training wheels here.':'Drag code into the editor, or click to insert it at the cursor.';
+  $('.search-box').classList.toggle('hidden',tab==='js');
+  if(tab==='js'){box.innerHTML='<div class="js-empty"><b>JavaScript = behavior</b><p>Write JavaScript directly in the editor. This version keeps the HTML/CSS lesson focused.</p></div>';return;}
+  const names=['All',...groups.map(g=>g[0])];
+  for(const name of names){const b=document.createElement('button');b.textContent=name==='All'?'All':name.toLowerCase().replaceAll('&','·');b.classList.toggle('active',currentCategory===name);b.onclick=()=>{currentCategory=name;renderLibrary()};cats.append(b)}
+  const q=$('#library-search').value.trim().toLowerCase(); let visible=0;
+  for(const [group,items] of groups){
+    if(currentCategory!=='All'&&currentCategory!==group)continue;
+    const shown=items.filter(i=>!q||(i.label+' '+i.code+' '+i.key).toLowerCase().includes(q)); if(!shown.length)continue;
+    const h=document.createElement('div');h.className='group-label';h.textContent=group;box.append(h);
+    for(const item of shown){visible++;box.append(makePaletteItem(item));}
+  }
+  $('#no-items').classList.toggle('hidden',visible>0);
+}
+function makePaletteItem(item){
+  const row=document.createElement('div');row.className='palette '+item.color;row.draggable=true;row.tabIndex=0;
+  row.innerHTML=`<div class="palette-main"><code>${esc(item.code)}</code><small>${esc(item.label)}</small></div><button class="q" type="button" title="What does this do?" aria-label="Explain ${esc(item.label)}">?</button>`;
+  row.addEventListener('click',e=>{if(e.target.closest('.q'))return;insertSnippet(item.insert,true)});
+  row.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('.q')){e.preventDefault();insertSnippet(item.insert,true)}});
+  row.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/x-textball',item.insert);e.dataTransfer.effectAllowed='copy'});
+  row.querySelector('.q').onclick=e=>{e.stopPropagation();showItemHelp(item)};
+  return row;
+}
+function showItemHelp(item){
+  $('#help-kicker').textContent=tab==='css'?'CSS':'HTML TAG'; $('#help-title').textContent=item.label; $('#help-description').textContent=item.desc; $('#help-code').textContent=item.insert;
+  const base=`<style>body{font-family:system-ui,sans-serif;padding:18px;color:#273149}img{max-width:100%;height:auto}a{color:#4b63c4}</style>`;
+  $('#help-preview').srcdoc=base+item.demo; $('#tag-help').showModal();
+}
+
+function insertSnippet(text,formatAfter=false,dropPos=null){
+  const start=dropPos??source.selectionStart, end=dropPos??source.selectionEnd; const before=source.value.slice(0,start), after=source.value.slice(end);
+  source.value=before+text+after; state[tab]=source.value; const caret=start+text.length; source.focus(); source.setSelectionRange(caret,caret); commit();
+  if(formatAfter&&tab!=='js'){formatCurrent(false);}
+  renderHighlight();preview();
+}
+
+function formatHTML(src){
+  const compact=src.replace(/>\s+</g,'><').trim(); if(!compact)return '';
+  const tokens=compact.replace(/></g,'>\n<').split('\n'); let depth=0, out=[]; const voids=new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+  for(let token of tokens){token=token.trim(); if(!token)continue; const close=/^<\//.test(token), tag=(token.match(/^<\/?([\w-]+)/)||[])[1]?.toLowerCase(); if(close)depth=Math.max(0,depth-1); out.push('  '.repeat(depth)+token); const opens=tag&&!close&&!voids.has(tag)&&!/^<!/.test(token)&&!/^<\?/.test(token)&&!new RegExp(`<\\/${tag}>`,'i').test(token); if(opens)depth++;}
+  return out.join('\n');
+}
+function formatCSS(src){
+  let out='',depth=0,token=''; const flush=()=>{const t=token.trim();if(t)out+='  '.repeat(depth)+t+'\n';token=''};
+  for(const ch of src){if(ch==='{'){const t=token.trim();if(t)out+='  '.repeat(depth)+t+' {\n';token='';depth++;}else if(ch==='}'){flush();depth=Math.max(0,depth-1);out+='  '.repeat(depth)+'}\n\n';}else if(ch===';'){token+=ch;flush();}else token+=ch;} flush(); return out.trim();
+}
+function formatCurrent(preserve=true){
+  if(tab==='js')return; const oldPos=source.selectionStart; const formatted=tab==='html'?formatHTML(source.value):formatCSS(source.value); if(!formatted&&source.value.trim())return; source.value=formatted;state[tab]=formatted;if(preserve){const p=Math.min(oldPos,formatted.length);source.setSelectionRange(p,p)}else source.setSelectionRange(formatted.length,formatted.length);commit();renderHighlight();preview();
+}
+
+function syntaxHTML(src){
+  let out='',last=0; const re=/<\/?([a-zA-Z][\w-]*)(?:\s[^<>]*?)?>/g; let m;
+  while((m=re.exec(src))){out+=esc(src.slice(last,m.index));const tag=m[1].toLowerCase(), cls=COLOR_BY_HTML_TAG[tag]||'gray';out+=`<span class="syn-${cls}">${esc(m[0])}</span>`;last=re.lastIndex;}return out+esc(src.slice(last));
+}
+function syntaxCSS(src){
+  let e=esc(src); e=e.replace(/(^|[{};]\s*)([a-z-]+)(\s*:)/g,(m,a,p,c)=>`${a}<span class="syn-${CSS_PROP_COLOR[p.toLowerCase()]||'gray'}">${p}</span>${c}`); e=e.replace(/(^|\})(\s*[^{}]+)(\s*\{)/g,(m,a,s,c)=>`${a}<span class="syn-purple">${s}</span>${c}`);return e;
+}
+function syntaxJS(src){return esc(src).replace(/\b(const|let|var|function|if|else|return|new|document|window)\b/g,'<span class="syn-purple">$1</span>')}
+function renderHighlight(){
+  highlight.innerHTML=(tab==='html'?syntaxHTML(source.value):tab==='css'?syntaxCSS(source.value):syntaxJS(source.value))+'\n';
+  const on=$('#color-guide').checked; $('#editor-wrap').classList.toggle('color-on',on); syncScroll();
+}
+function syncScroll(){highlight.scrollTop=source.scrollTop;highlight.scrollLeft=source.scrollLeft}
+
+function pageSource(withInspector=true){
+  const css=state.cssOn?`<style>${state.css.replace(/<\/style/gi,'<\\/style')}</style>`:'';
+  const js=state.jsOn?`<script>${state.js.replace(/<\/script/gi,'<\\/script')}<\/script>`:'';
+  const inspector=withInspector?`<script>(()=>{let on=false,last=null;const els=[...document.body.querySelectorAll('*')].filter(x=>x.tagName!=='SCRIPT'&&x.tagName!=='STYLE');els.forEach((el,i)=>el.dataset.textballId=i);addEventListener('message',e=>{if(e.data?.type==='textball-inspect-mode'){on=!!e.data.on;document.body.style.cursor=on?'crosshair':''}if(e.data?.type==='textball-highlight'){if(last)last.style.outline='';const x=document.querySelector('[data-textball-id="'+e.data.id+'"]');if(x){x.style.outline='3px solid #f59e0b';x.style.outlineOffset='2px';last=x;x.scrollIntoView({block:'nearest'})}}});document.addEventListener('click',e=>{if(!on)return;e.preventDefault();e.stopPropagation();const el=e.target.closest('[data-textball-id]');if(el)parent.postMessage({type:'textball-select',id:el.dataset.textballId},'*')},true)})();<\/script>`:'';
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${css}</head><body>${state.html}${js}${inspector}</body></html>`;
+}
+function preview(){
+  clearTimeout(previewTimer);previewTimer=setTimeout(()=>{const base='<base href="'+esc(new URL('.',location.href).href)+'">';frame.srcdoc=pageSource().replace('<head>','<head>'+base);frame.onload=()=>setInspectMode(inspectOn,false);updateCount()},100);
+}
+function updateCount(){const n=(state.html.match(/<([a-z][\w-]*)(?:\s[^>]*)?>/gi)||[]).filter(x=>!x.startsWith('</')).length;$('#count').textContent=n?`${n} HTML element${n===1?'':'s'}`:'Blank project'}
+
+function sourceElementOpenings(){
+  const arr=[];const re=/<([a-zA-Z][\w-]*)(?:\s[^<>]*?)?>/g;let m;while((m=re.exec(state.html))){if(/^<!/.test(m[0]))continue;arr.push({tag:m[1].toLowerCase(),start:m.index,end:re.lastIndex,text:m[0]})}return arr;
+}
+function selectPreviewId(id){
+  const doc=new DOMParser().parseFromString(`<body>${state.html}</body>`,'text/html');const nodes=[...doc.body.querySelectorAll('*')];const el=nodes[+id];if(!el)return;
+  const openings=sourceElementOpenings();let sameBefore=0;for(let i=0;i<+id;i++)if(nodes[i].tagName===el.tagName)sameBefore++;
+  const matches=openings.filter(x=>x.tag===el.tagName.toLowerCase());const hit=matches[sameBefore]||matches[0];
+  if(hit){setTab('html');source.focus();source.setSelectionRange(hit.start,hit.end);source.scrollTop=Math.max(0,lineForIndex(state.html,hit.start)*parseFloat(getComputedStyle(source).lineHeight)-source.clientHeight/2);syncScroll();$('#inspect-status').innerHTML=`Found <b>&lt;${el.tagName.toLowerCase()}&gt;</b> in your HTML.`;$('#preview-bottom').innerHTML=`Selected <b>&lt;${el.tagName.toLowerCase()}&gt;</b>. That tag creates the thing you clicked.`;try{frame.contentWindow.postMessage({type:'textball-highlight',id:String(id)},'*')}catch{}}
+}
+function lineForIndex(text,index){return text.slice(0,index).split('\n').length-1}
+function setInspectMode(on,updateButton=true){inspectOn=on;if(updateButton){$('#inspect').classList.toggle('active',on);$('#inspect').setAttribute('aria-pressed',String(on));$('#inspect').textContent=on?'✕ Stop inspect':'🔎 Inspect'}try{frame.contentWindow.postMessage({type:'textball-inspect-mode',on},'*')}catch{}if(on)$('#preview-bottom').textContent='Inspect is on. Click something in the website to find its HTML.';else if(updateButton)$('#preview-bottom').textContent='Every change shows up here.'}
+window.addEventListener('message',e=>{if(e.source===frame.contentWindow&&e.data?.type==='textball-select')selectPreviewId(e.data.id)});
+
+function setTab(next,doCommit=true){
+  if(doCommit){state[tab]=source.value;commit()} tab=next;currentCategory='All';$('#library-search').value='';
+  document.querySelectorAll('[data-tab]').forEach(b=>{const on=b.dataset.tab===tab;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on))});
+  source.value=state[tab];source.setAttribute('aria-label',`${tab==='js'?'JavaScript':tab.toUpperCase()} source code`);
+  $('#language-switch').classList.toggle('hidden',tab==='html');
+  if(tab!=='html'){const on=tab==='css'?state.cssOn:state.jsOn;$('#language-enabled').checked=on;$('#language-switch-text').textContent=`Turn ${tab==='css'?'CSS':'JavaScript'} ${on?'off':'on'}`;$('#language-switch-help').textContent=on?(tab==='css'?'Your styles are visible in the preview.':'Your script runs in the preview.'):'Your code stays saved here while it is off.'}
+  $('#codebar-label').textContent=tab==='html'?'② Write the HTML':tab==='css'?'② Write the CSS':'② Write the JavaScript';
+  $('#note').textContent=tab==='html'?'The browser reads this text and turns the tags into the page on the right.':tab==='css'?'CSS selectors choose HTML elements. The rules inside the braces change how they look.':'JavaScript adds behavior. This version keeps it as plain text.';
+  renderLibrary();renderHighlight();
+}
+
+source.addEventListener('input',()=>{state[tab]=source.value;renderHighlight();clearTimeout(source.commitTimer);source.commitTimer=setTimeout(commit,450);preview()});
+source.addEventListener('scroll',syncScroll);
+source.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const s=source.selectionStart,en=source.selectionEnd;source.setRangeText('  ',s,en,'end');source.dispatchEvent(new Event('input'))}});
+source.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('text/x-textball')){e.preventDefault();source.classList.add('drag-target')}});
+source.addEventListener('dragleave',()=>source.classList.remove('drag-target'));
+source.addEventListener('drop',e=>{const t=e.dataTransfer.getData('text/x-textball');if(!t)return;e.preventDefault();source.classList.remove('drag-target');source.focus();let pos=source.selectionStart;if(document.caretPositionFromPoint){const p=document.caretPositionFromPoint(e.clientX,e.clientY);if(p){/* textarea caret from point is not portable; current caret is the safe fallback */}}insertSnippet(t,true,pos)});
+
+$('#library-search').addEventListener('input',renderLibrary);
+$('#color-guide').addEventListener('change',renderHighlight);
+$('#format-code').onclick=()=>formatCurrent(true);
+$('#inspect').onclick=()=>setInspectMode(!inspectOn);
+$('#run').onclick=preview;
+$('#size').onclick=()=>{const small=$('#preview-wrap').classList.toggle('phone');$('#size').textContent=small?'▣ Desktop':'▯ Mobile'};
+$('#language-enabled').onchange=()=>{if(tab==='css')state.cssOn=$('#language-enabled').checked;else state.jsOn=$('#language-enabled').checked;commit();setTab(tab,false);preview()};
+for(const b of document.querySelectorAll('[data-tab]'))b.onclick=()=>setTab(b.dataset.tab);
+$('#undo').onclick=()=>history(true);$('#redo').onclick=()=>history(false);
+$('#open-help').onclick=()=>$('#general-help').showModal();$('#close-help').onclick=()=>$('#general-help').close();$('#close-tag-help').onclick=()=>$('#tag-help').close();
+
+function saveFile(content,name,type){const u=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+$('#export-html').onclick=()=>{saveFile(pageSource(false),'my-website.html','text/html;charset=utf-8');dirty=false;notify('Website exported.')} ;
+$('#export-css').onclick=()=>saveFile(state.css,'my-styles.css','text/css;charset=utf-8');
+$('#import-html').onclick=()=>$('#html-file').click();$('#import-css').onclick=()=>$('#css-file').click();
+$('#html-file').onchange=async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;const text=await f.text();const d=new DOMParser().parseFromString(text,'text/html'),styles=[...d.querySelectorAll('style')].map(x=>x.textContent).filter(Boolean),scripts=[...d.querySelectorAll('script:not([src])')].map(x=>x.textContent).filter(Boolean);d.querySelectorAll('style,script').forEach(x=>x.remove());state.html=formatHTML(d.body.innerHTML);if(styles.length){state.css=formatCSS(styles.join('\n\n'));state.cssOn=true}if(scripts.length){state.js=scripts.join('\n\n');state.jsOn=true}commit();setTab('html',false);preview();notify(`Imported ${f.name}`)};
+$('#css-file').onchange=async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;state.css=formatCSS(await f.text());state.cssOn=true;commit();setTab('css',false);preview();notify(`Imported ${f.name}`)};
+$('#load-example').onclick=()=>{if((state.html||state.css||state.js)&&!confirm('Load the example? This replaces your current project. Export first if you want to keep it.'))return;state.html=EXAMPLE_HTML;state.css=EXAMPLE_CSS;state.js='';state.cssOn=true;state.jsOn=false;commit();setTab('html',false);preview();notify('Example loaded.')};
+
+function setTheme(dark){document.documentElement.dataset.theme=dark?'dark':'light';$('#theme-toggle').setAttribute('aria-pressed',String(dark));$('#theme-toggle').textContent=dark?'☀ Light mode':'☾ Dark mode';try{localStorage.setItem('textball-theme',dark?'dark':'light')}catch{}}
+let saved=null;try{saved=localStorage.getItem('textball-theme')}catch{}setTheme(saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme: dark)').matches));
+$('#theme-toggle').onclick=()=>setTheme(document.documentElement.dataset.theme!=='dark');
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&e.target!==source){e.preventDefault();history(!e.shiftKey)}});
+window.addEventListener('beforeunload',e=>{if(!dirty)return;e.preventDefault();e.returnValue='';});
+
+last=snapshot();setTab('html',false);preview();historyUI();
+</script>
+</body>
+</html>
