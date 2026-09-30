@@ -11,3 +11,11 @@ html[data-theme="dark"]{color-scheme:dark;background:#151e2b;color:#e0e8f4}[data
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
 
 [data-theme="dark"] .ascii-logo{background:#0d1723;border-color:#354a64;color:#e7edf7}
+
+/* Beginner-friendly controls inside CSS library items. */
+.palette-controls{display:flex;align-items:center;gap:5px;padding:6px 0 6px 4px;flex-shrink:0}
+.palette-color{width:34px;height:32px;padding:2px;border:2px solid #ffffffaa;border-radius:6px;background:#fff;cursor:pointer}
+.palette-select{max-width:108px;height:32px;border:1px solid #ffffff88;border-radius:6px;padding:3px 5px;background:#fff;color:#26344a;font:600 10px/1 system-ui,sans-serif;cursor:pointer}
+.palette-controls:empty{display:none}
+[data-theme="dark"] .palette-select{color-scheme:light;background:#f7f8fb;color:#26344a}
+@media(max-width:560px){.palette-select{max-width:76px;font-size:9px}.palette-color{width:30px;height:29px}.palette-controls{padding-left:1px}}

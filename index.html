@@ -258,17 +258,55 @@ function renderLibrary(){
 }
 function makePaletteItem(item){
   const row=document.createElement('div');row.className='palette '+item.color;row.draggable=true;row.tabIndex=0;
-  row.innerHTML=`<div class="palette-main"><code>${esc(item.code)}</code><small>${esc(item.label)}</small></div><button class="q" type="button" title="What does this do?" aria-label="Explain ${esc(item.label)}">?</button>`;
-  row.addEventListener('click',e=>{if(e.target.closest('.q'))return;insertSnippet(item.insert,true)});
-  row.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('.q')){e.preventDefault();insertSnippet(item.insert,true)}});
-  row.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/x-textball',item.insert);e.dataTransfer.effectAllowed='copy'});
-  row.querySelector('.q').onclick=e=>{e.stopPropagation();showItemHelp(item)};
+  row.innerHTML=`<div class="palette-main"><code>${esc(item.code)}</code><small>${esc(item.label)}</small></div><div class="palette-controls"></div><button class="q" type="button" title="What does this do?" aria-label="Explain ${esc(item.label)}">?</button>`;
+  const controls=row.querySelector('.palette-controls'), code=row.querySelector('code');
+
+  // CSS colors get a real color picker instead of asking beginners to memorize hex values.
+  if(tab==='css' && (item.key==='color'||item.key==='background')){
+    const picker=document.createElement('input');picker.type='color';picker.className='palette-color';picker.setAttribute('aria-label',item.label+' picker');
+    const initial=(item.insert.match(/#[0-9a-f]{6}/i)||['#5749df'])[0];picker.value=initial;
+    const sync=()=>{const prop=item.key==='background'?'background':'color';item._chosenInsert=`${prop}: ${picker.value};`;code.textContent=item._chosenInsert;};
+    picker.addEventListener('input',sync);picker.addEventListener('click',e=>e.stopPropagation());picker.addEventListener('pointerdown',e=>e.stopPropagation());sync();controls.append(picker);
+  }
+
+  // Font family gets a classroom-friendly dropdown while still inserting honest CSS text.
+  if(tab==='css' && item.key==='font-family'){
+    const select=document.createElement('select');select.className='palette-select';select.setAttribute('aria-label','Choose a font');
+    const fonts=[['Arial','Arial, sans-serif'],['Georgia','Georgia, serif'],['Times New Roman','"Times New Roman", serif'],['Verdana','Verdana, sans-serif'],['Trebuchet MS','"Trebuchet MS", sans-serif'],['Courier New','"Courier New", monospace'],['System UI','system-ui, sans-serif']];
+    for(const [label,value] of fonts)select.add(new Option(label,value));
+    select.value='Arial, sans-serif';
+    const sync=()=>{item._chosenInsert=`font-family: ${select.value};`;code.textContent=item._chosenInsert;};
+    select.addEventListener('change',sync);select.addEventListener('click',e=>e.stopPropagation());select.addEventListener('pointerdown',e=>e.stopPropagation());sync();controls.append(select);
+  }
+
+  const insertion=()=>item._chosenInsert||item.insert;
+  row.addEventListener('click',e=>{if(e.target.closest('.q,.palette-controls'))return;insertLibraryItem({...item,insert:insertion()})});
+  row.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('.q,.palette-controls')){e.preventDefault();insertLibraryItem({...item,insert:insertion()})}});
+  row.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/x-textball',insertion());e.dataTransfer.effectAllowed='copy'});
+  row.querySelector('.q').onclick=e=>{e.stopPropagation();showItemHelp({...item,insert:insertion()})};
   return row;
 }
 function showItemHelp(item){
   $('#help-kicker').textContent=tab==='css'?'CSS':'HTML TAG'; $('#help-title').textContent=item.label; $('#help-description').textContent=item.desc; $('#help-code').textContent=item.insert;
   const base=`<style>body{font-family:system-ui,sans-serif;padding:18px;color:#273149}img{max-width:100%;height:auto}a{color:#4b63c4}</style>`;
   $('#help-preview').srcdoc=base+item.demo; $('#tag-help').showModal();
+}
+
+function insertLibraryItem(item){
+  // Bold / italic / underline should wrap highlighted HTML instead of replacing it.
+  if(tab==='html' && ['b','i','u'].includes(item.key) && source.selectionEnd>source.selectionStart){
+    const start=source.selectionStart, end=source.selectionEnd;
+    const selected=source.value.slice(start,end);
+    const wrapped=`<${item.key}>${selected}</${item.key}>`;
+    source.setRangeText(wrapped,start,end,'select');
+    state.html=source.value;
+    source.focus();
+    // Keep the original words selected inside their new tags so students can stack formatting.
+    source.setSelectionRange(start+item.key.length+2,start+item.key.length+2+selected.length);
+    commit();renderHighlight();preview();
+    return;
+  }
+  insertSnippet(item.insert,true);
 }
 
 function insertSnippet(text,formatAfter=false,dropPos=null){
@@ -344,9 +382,29 @@ function setTab(next,doCommit=true){
 source.addEventListener('input',()=>{state[tab]=source.value;renderHighlight();clearTimeout(source.commitTimer);source.commitTimer=setTimeout(commit,450);preview()});
 source.addEventListener('scroll',syncScroll);
 source.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const s=source.selectionStart,en=source.selectionEnd;source.setRangeText('  ',s,en,'end');source.dispatchEvent(new Event('input'))}});
+function textareaDropPosition(e){
+  // Textball's editor is monospace and does not wrap, so we can map the mouse
+  // coordinates directly to a line + column in the textarea. This makes a
+  // dragged library item land where the student actually drops it.
+  const styles=getComputedStyle(source), rect=source.getBoundingClientRect();
+  const lineHeight=parseFloat(styles.lineHeight)||22;
+  const padTop=parseFloat(styles.paddingTop)||0, padLeft=parseFloat(styles.paddingLeft)||0;
+  const canvas=textareaDropPosition.canvas||(textareaDropPosition.canvas=document.createElement('canvas'));
+  const ctx=canvas.getContext('2d');
+  ctx.font=styles.font;
+  const charWidth=ctx.measureText('M').width||8;
+  const y=e.clientY-rect.top-padTop+source.scrollTop;
+  const x=e.clientX-rect.left-padLeft+source.scrollLeft;
+  const lines=source.value.split('\n');
+  const line=Math.max(0,Math.min(lines.length-1,Math.floor(y/lineHeight)));
+  const col=Math.max(0,Math.min(lines[line].length,Math.round(x/charWidth)));
+  let pos=col;
+  for(let i=0;i<line;i++)pos+=lines[i].length+1;
+  return pos;
+}
 source.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('text/x-textball')){e.preventDefault();source.classList.add('drag-target')}});
 source.addEventListener('dragleave',()=>source.classList.remove('drag-target'));
-source.addEventListener('drop',e=>{const t=e.dataTransfer.getData('text/x-textball');if(!t)return;e.preventDefault();source.classList.remove('drag-target');source.focus();let pos=source.selectionStart;if(document.caretPositionFromPoint){const p=document.caretPositionFromPoint(e.clientX,e.clientY);if(p){/* textarea caret from point is not portable; current caret is the safe fallback */}}insertSnippet(t,true,pos)});
+source.addEventListener('drop',e=>{const t=e.dataTransfer.getData('text/x-textball');if(!t)return;e.preventDefault();source.classList.remove('drag-target');const pos=textareaDropPosition(e);source.focus();source.setSelectionRange(pos,pos);insertSnippet(t,true,pos)});
 
 $('#library-search').addEventListener('input',renderLibrary);
 $('#color-guide').addEventListener('change',renderHighlight);
@@ -370,7 +428,12 @@ $('#load-example').onclick=()=>{if((state.html||state.css||state.js)&&!confirm('
 function setTheme(dark){document.documentElement.dataset.theme=dark?'dark':'light';$('#theme-toggle').setAttribute('aria-pressed',String(dark));$('#theme-toggle').textContent=dark?'☀ Light mode':'☾ Dark mode';try{localStorage.setItem('textball-theme',dark?'dark':'light')}catch{}}
 let saved=null;try{saved=localStorage.getItem('textball-theme')}catch{}setTheme(saved==='dark'||(!saved&&matchMedia('(prefers-color-scheme: dark)').matches));
 $('#theme-toggle').onclick=()=>setTheme(document.documentElement.dataset.theme!=='dark');
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&e.target!==source){e.preventDefault();history(!e.shiftKey)}});
+document.addEventListener('keydown',e=>{
+  if(!(e.ctrlKey||e.metaKey))return;
+  const key=e.key.toLowerCase();
+  if(key==='z'){e.preventDefault();history(!e.shiftKey);return;}
+  if(key==='y'){e.preventDefault();history(false);}
+});
 window.addEventListener('beforeunload',e=>{if(!dirty)return;e.preventDefault();e.returnValue='';});
 
 last=snapshot();setTab('html',false);preview();historyUI();
