@@ -19,3 +19,12 @@ html[data-theme="dark"]{color-scheme:dark;background:#151e2b;color:#e0e8f4}[data
 .palette-controls:empty{display:none}
 [data-theme="dark"] .palette-select{color-scheme:light;background:#f7f8fb;color:#26344a}
 @media(max-width:560px){.palette-select{max-width:76px;font-size:9px}.palette-color{width:30px;height:29px}.palette-controls{padding-left:1px}}
+/* Keep dropdowns below code instead of squeezing it into a narrow column. */
+.palette.has-select{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:0}
+.palette.has-select .palette-main{grid-column:1;grid-row:1}
+.palette.has-select .palette-controls{grid-column:1;grid-row:2;min-width:0;padding:0 10px 10px}
+.palette.has-select .palette-select{width:100%;min-width:0;max-width:100%}
+.palette.has-select .q{grid-column:2;grid-row:1 / 3;padding:0;width:100%}
+.palette-select:focus-visible,footer a:focus-visible{outline:3px solid #f5bd45;outline-offset:2px}
+footer a{color:inherit;text-underline-offset:2px}
+@media(max-width:560px){.palette.has-select{grid-template-columns:minmax(0,1fr) 28px}.palette.has-select .palette-controls{padding:0 6px 8px}footer{grid-template-columns:1fr auto}footer .copyright{grid-column:1 / -1;padding-bottom:5px}}

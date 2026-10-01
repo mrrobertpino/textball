@@ -130,7 +130,7 @@
   </section>
 </main>
 
-<footer><span>HTML = content · CSS = style · JavaScript = behavior</span><span id="count">Blank project</span><span class="copyright">© Robert Pino 2026</span></footer>
+<footer><span>HTML = content · CSS = style · JavaScript = behavior</span><span id="count">Blank project</span><span class="copyright">© Robert Pino · <a href="https://robertpino.com" target="_blank" rel="noopener noreferrer">robertpino.com</a></span></footer>
 <div class="toast" id="toast" role="status"></div>
 
 <dialog id="tag-help">
@@ -195,7 +195,8 @@ const CSS_ITEMS = [
     {key:'h1sel',label:'Main headings',code:'h1 { }',insert:'h1 {\n  \n}',color:'purple',desc:'The h1 selector styles every h1 heading.',demo:'<h1 style="color:#5749df;outline:3px solid #f59e0b;outline-offset:3px">Styled heading</h1>'},
     {key:'psel',label:'Paragraphs',code:'p { }',insert:'p {\n  \n}',color:'purple',desc:'The p selector styles every paragraph.',demo:'<p style="font-size:20px;outline:3px solid #f59e0b;outline-offset:3px">Styled paragraph</p>'},
     {key:'class',label:'A class',code:'.my-class { }',insert:'.my-class {\n  \n}',color:'purple',desc:'A class selector styles elements whose class attribute matches the name.',demo:'<p class="my-class" style="background:#fff2dc;padding:8px;outline:3px solid #f59e0b">class="my-class"</p>'},
-    {key:'id',label:'One ID',code:'#my-id { }',insert:'#my-id {\n  \n}',color:'purple',desc:'An ID selector styles the one element whose id attribute matches the name.',demo:'<p id="my-id" style="background:#e7f5ef;padding:8px;outline:3px solid #f59e0b">id="my-id"</p>'}
+    {key:'id',label:'One ID',code:'#my-id { }',insert:'#my-id {\n  \n}',color:'purple',desc:'An ID selector styles the one element whose id attribute matches the name.',demo:'<p id="my-id" style="background:#e7f5ef;padding:8px;outline:3px solid #f59e0b">id="my-id"</p>'},
+    {key:'elements',label:'More elements',code:'img { }',insert:'img {\n  \n}',color:'purple',desc:'Choose an HTML element to style every matching element on the page. For example, img selects images.',demo:'<img src="dog.png" alt="A happy dog" style="width:150px;outline:3px solid #f59e0b">'}
   ]],
   ['COLOR', [
     {key:'color',label:'Text color',code:'color: #5749df;',insert:'color: #5749df;',color:'pink',desc:'color changes the color of text.',demo:'<p style="color:#5749df;font-size:22px;outline:3px solid #f59e0b">Purple text</p>'},
@@ -250,16 +251,34 @@ function renderLibrary(){
   const q=$('#library-search').value.trim().toLowerCase(); let visible=0;
   for(const [group,items] of groups){
     if(currentCategory!=='All'&&currentCategory!==group)continue;
-    const shown=items.filter(i=>!q||(i.label+' '+i.code+' '+i.key).toLowerCase().includes(q)); if(!shown.length)continue;
+    const shown=items.filter(i=>!q||(i.label+' '+i.code+' '+i.key+' '+(i.key==='elements'?ELEMENT_SELECTORS.join(' '):'')+' '+(['h1','h1sel'].includes(i.key)?'h1 h2 h3 h4 h5 h6':'')).toLowerCase().includes(q)); if(!shown.length)continue;
     const h=document.createElement('div');h.className='group-label';h.textContent=group;box.append(h);
     for(const item of shown){visible++;box.append(makePaletteItem(item));}
   }
   $('#no-items').classList.toggle('hidden',visible>0);
 }
+const ELEMENT_SELECTORS = ['img','a','ul','ol','li','div','section','span','b','strong','i','em','u','br','hr','header','footer','main','nav','article','aside','figure','figcaption','button','input','label','form','textarea','select','table','thead','tbody','tr','th','td','video','audio'];
 function makePaletteItem(item){
   const row=document.createElement('div');row.className='palette '+item.color;row.draggable=true;row.tabIndex=0;
   row.innerHTML=`<div class="palette-main"><code>${esc(item.code)}</code><small>${esc(item.label)}</small></div><div class="palette-controls"></div><button class="q" type="button" title="What does this do?" aria-label="Explain ${esc(item.label)}">?</button>`;
   const controls=row.querySelector('.palette-controls'), code=row.querySelector('code');
+
+  if((tab==='css' && ['h1sel','elements'].includes(item.key)) || (tab==='html' && item.key==='h1')){
+    row.classList.add('has-select');
+    const select=document.createElement('select');select.className='palette-select';
+    const headings=item.key!=='elements';
+    select.setAttribute('aria-label',headings?'Choose a heading level':'Choose an element to style');
+    for(const tag of headings?['h1','h2','h3','h4','h5','h6']:ELEMENT_SELECTORS)select.add(new Option(tag,tag));
+    select.value=item._chosenTag||select.options[0].value;
+    const sync=()=>{
+      const tag=select.value;item._chosenTag=tag;
+      item._chosenInsert=tab==='css'?`${tag} {\n  \n}`:`<${tag}>Your heading</${tag}>`;
+      code.textContent=tab==='css'?`${tag} { }`:item._chosenInsert;
+      if(headings){item.desc=`${tag} is heading level ${tag.slice(1)}. HTML headings organize the page from h1 (main title) to h6. A CSS ${tag} selector styles every ${tag} heading.`;item.demo=`<${tag} style="color:#5749df;outline:3px solid #f59e0b;outline-offset:3px">Your heading</${tag}>`;row.querySelector('small').textContent='Heading';}
+      else{item.desc=`The ${tag} selector styles every <${tag}> element on the page.`;item.demo=tag==='img'?'<img src="dog.png" alt="A happy dog" style="width:150px;outline:3px solid #f59e0b">':`<p>Use <code>${tag} { color: purple; }</code> to target your page’s <code>&lt;${tag}&gt;</code> elements.</p>`;}
+    };
+    select.addEventListener('change',sync);sync();controls.append(select);
+  }
 
   // CSS colors get a real color picker instead of asking beginners to memorize hex values.
   if(tab==='css' && (item.key==='color'||item.key==='background')){
@@ -271,11 +290,12 @@ function makePaletteItem(item){
 
   // Font family gets a classroom-friendly dropdown while still inserting honest CSS text.
   if(tab==='css' && item.key==='font-family'){
+    row.classList.add('has-select');
     const select=document.createElement('select');select.className='palette-select';select.setAttribute('aria-label','Choose a font');
     const fonts=[['Arial','Arial, sans-serif'],['Georgia','Georgia, serif'],['Times New Roman','"Times New Roman", serif'],['Verdana','Verdana, sans-serif'],['Trebuchet MS','"Trebuchet MS", sans-serif'],['Courier New','"Courier New", monospace'],['System UI','system-ui, sans-serif']];
     for(const [label,value] of fonts)select.add(new Option(label,value));
-    select.value='Arial, sans-serif';
-    const sync=()=>{item._chosenInsert=`font-family: ${select.value};`;code.textContent=item._chosenInsert;};
+    select.value=item._chosenFont||'Arial, sans-serif';
+    const sync=()=>{item._chosenFont=select.value;item._chosenInsert=`font-family: ${select.value};`;code.textContent=item._chosenInsert;};
     select.addEventListener('change',sync);select.addEventListener('click',e=>e.stopPropagation());select.addEventListener('pointerdown',e=>e.stopPropagation());sync();controls.append(select);
   }
 
